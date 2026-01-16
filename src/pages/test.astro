@@ -1,8 +1,13 @@
 ---
-const items = []; 
+// Define the type as an array of strings (or whatever data you plan to use)
+const items: string[] = []; 
 ---
 <div>
-  {items.map((item: any) => ( 
-    <p>{item}</p>
-  ))}
+  {items.length > 0 ? (
+    items.map((item) => ( 
+      <p>{item}</p>
+    ))
+  ) : (
+    <p>No items found.</p>
+  )}
 </div>
