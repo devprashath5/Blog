@@ -1,105 +1,45 @@
 ---
 import Layout from '../layouts/Layout.astro';
-import db from '../lib/db';
+import { supabase } from '../lib/supabase';
 
-const posts = db.prepare(`
-  SELECT posts.*, users.username 
-  FROM posts 
-  JOIN users ON posts.author_id = users.id 
-  ORDER BY posts.created_at DESC 
-  LIMIT 5
-`).all();
+const { data: posts } = await supabase
+  .from('posts')
+  .select('*, users(username)')
+  .order('created_at', { ascending: false });
 ---
-
 <Layout title="Home">
-  <div class="hero-gradient text-center">
     <div class="container">
-      <h1 class="display-3 font-weight-bold mb-4">Welcome to BlogSpace</h1>
-      <p class="lead mb-5" style="font-size: 1.3rem; max-width: 800px; margin-left: auto; margin-right: auto;">
-        Share your stories, discover new perspectives, and connect with a community of writers and readers.
-      </p>
-      <div>
-        <a href="/signup" class="btn btn-hero btn-lg mr-3 mb-2">Get Started Free</a>
-        <a href="#posts" class="btn btn-outline-hero btn-lg mb-2">Explore Posts</a>
-      </div>
-    </div>
-  </div>
-
-  <div class="container mb-5" id="posts">
-    <div class="text-center mb-5">
-      <h2 class="display-4 gradient-text font-weight-bold mb-3">Latest Posts</h2>
-      <p class="text-muted" style="font-size: 1.1rem;">Discover what's trending in our community</p>
-    </div>
-    
-    {posts.length === 0 ? (
-      <div class="row justify-content-center">
-        <div class="col-md-8">
-          <div class="card text-center py-5">
-            <div class="card-body">
-              <svg class="mb-4" width="100" height="100" fill="currentColor" style="color: #dee2e6;" viewBox="0 0 16 16">
-                <path d="M5 4a.5.5 0 0 0 0 1h6a.5.5 0 0 0 0-1H5zm-.5 2.5A.5.5 0 0 1 5 6h6a.5.5 0 0 1 0 1H5a.5.5 0 0 1-.5-.5zM5 8a.5.5 0 0 0 0 1h6a.5.5 0 0 0 0-1H5zm0 2a.5.5 0 0 0 0 1h3a.5.5 0 0 0 0-1H5z"/>
-                <path d="M2 2a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V2zm10-1H4a1 1 0 0 0-1 1v12a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1z"/>
-              </svg>
-              <h3 class="font-weight-bold mb-3">No posts yet</h3>
-              <p class="text-muted mb-4">Be the first to share your thoughts with the community!</p>
-              <a href="/signup" class="btn btn-gradient btn-lg">Create Your First Post</a>
-            </div>
-          </div>
-        </div>
-      </div>
-    ) : (
-      <div class="row">
-        {posts.map((post: any) => (
-          <div class="col-lg-4 col-md-6 mb-4">
-            <div class="card">
-              <div class="card-top-bar"></div>
-              <div class="card-body">
-                <div class="d-flex align-items-center mb-3">
-                  <div class="avatar mr-3">
-                    {post.username.charAt(0).toUpperCase()}
-                  </div>
-                  <div>
-                    <div class="font-weight-bold text-dark">{post.username}</div>
-                    <small class="text-muted">
-                      {new Date(post.created_at).toLocaleDateString('en-US', { 
-                        month: 'short', 
-                        day: 'numeric', 
-                        year: 'numeric' 
-                      })}
-                    </small>
-                  </div>
+        <section class="mb-5 p-5 rounded-4 shadow-lg text-white" style="background: linear-gradient(135deg, #131921 0%, #37475a 100%); overflow: hidden; position: relative;">
+            <div class="row align-items-center position-relative" style="z-index: 2;">
+                <div class="col-lg-7">
+                    <h1 class="display-3 fw-bold mb-3">Premium Content. <br/><span style="color: #6200ea;">Stunning Design.</span></h1>
+                    <p class="fs-4 opacity-75 mb-4">Discover the latest insights from top authors in a distraction-free environment.</p>
+                    <a href="/signup" class="btn-purple btn-lg">Join the Community</a>
                 </div>
-                
-                <h5 class="card-title font-weight-bold mb-3">
-                  <a href={`/post/${post.id}`} class="text-dark text-decoration-none" style="line-height: 1.4;">
-                    {post.title}
-                  </a>
-                </h5>
-                
-                <p class="card-text text-muted mb-4" style="line-height: 1.6;">
-                  {post.content.substring(0, 120)}{post.content.length > 120 ? '...' : ''}
-                </p>
-                
-                <a href={`/post/${post.id}`} class="btn btn-gradient btn-sm">
-                  Read More →
-                </a>
-              </div>
             </div>
-          </div>
-        ))}
-      </div>
-    )}
-  </div>
+            <div style="position: absolute; right: -50px; bottom: -50px; width: 300px; height: 300px; background: rgba(98, 0, 234, 0.2); border-radius: 50%; filter: blur(60px);"></div>
+        </section>
 
-  <div class="hero-gradient text-center py-5">
-    <div class="container">
-      <h2 class="display-4 font-weight-bold mb-4">Ready to Share Your Story?</h2>
-      <p class="lead mb-4" style="font-size: 1.2rem; max-width: 700px; margin-left: auto; margin-right: auto;">
-        Join thousands of writers and start creating amazing content today.
-      </p>
-      <a href="/signup" class="btn btn-light btn-lg" style="color: #667eea; font-weight: 700; padding: 15px 40px;">
-        Start Writing Now
-      </a>
+        <h2 class="fw-bold mb-4">Trending Stories</h2>
+        <div class="row row-cols-1 row-cols-md-3 g-4">
+            {posts?.map((post: any) => (
+                <div class="col">
+                    <div class="card h-100 glass-card p-3 border-0">
+                        <div class="card-body">
+                            <div class="d-flex align-items-center mb-3">
+                                <div class="bg-purple rounded-circle me-2" style="width: 10px; height: 10px; background: #6200ea;"></div>
+                                <span class="text-uppercase small fw-bold text-muted">Article</span>
+                            </div>
+                            <h4 class="card-title fw-bold mb-3">{post.title}</h4>
+                            <p class="text-muted small mb-3">By <strong>{post.users?.username}</strong> • {new Date(post.created_at).toLocaleDateString()}</p>
+                            <p class="card-text text-secondary mb-4">{post.content.substring(0, 120)}...</p>
+                        </div>
+                        <div class="card-footer bg-transparent border-0 px-3 pb-3">
+                            <a href={`/post/${post.id}`} class="btn-purple w-100 text-center text-decoration-none d-block">Read Story</a>
+                        </div>
+                    </div>
+                </div>
+            ))}
+        </div>
     </div>
-  </div>
 </Layout>

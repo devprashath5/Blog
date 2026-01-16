@@ -9,9 +9,9 @@
   },
   "dependencies": {
     "@astrojs/node": "^9.5.1",
+    "@supabase/supabase-js": "^2.90.1",
     "astro": "^5.16.6",
     "bcryptjs": "^2.4.3",
-    "better-sqlite3": "^12.5.0",
     "cookie": "^0.7.2",
     "sql.js": "^1.13.0"
   },
