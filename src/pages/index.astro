@@ -1,12 +1,26 @@
 ---
+export const prerender = false;
+
 import Layout from '../layouts/Layout.astro';
 import { supabase } from '../lib/supabase';
 
-const { data: posts } = await supabase
+// 1. Specify the relationship explicitly using !relationship_name
+// We use 'users!posts_author_id_fkey' to tell Supabase exactly which link to follow
+const { data: posts, error } = await supabase
   .from('posts')
-  .select('*, users(username)')
+  .select(`
+    *,
+    users!posts_author_id_fkey (
+      username
+    )
+  `)
   .order('created_at', { ascending: false });
+
+if (error) {
+  console.error("Supabase Database Error:", error.message);
+}
 ---
+
 <Layout title="Home">
     <div class="container">
         <section class="mb-5 p-5 rounded-4 shadow-lg text-white" style="background: linear-gradient(135deg, #131921 0%, #37475a 100%); overflow: hidden; position: relative;">
@@ -21,25 +35,71 @@ const { data: posts } = await supabase
         </section>
 
         <h2 class="fw-bold mb-4">Trending Stories</h2>
+
         <div class="row row-cols-1 row-cols-md-3 g-4">
-            {posts?.map((post: any) => (
-                <div class="col">
-                    <div class="card h-100 glass-card p-3 border-0">
-                        <div class="card-body">
-                            <div class="d-flex align-items-center mb-3">
-                                <div class="bg-purple rounded-circle me-2" style="width: 10px; height: 10px; background: #6200ea;"></div>
-                                <span class="text-uppercase small fw-bold text-muted">Article</span>
+            {posts && posts.length > 0 ? (
+                posts.map((post: any) => (
+                    <div class="col">
+                        <div class="card h-100 glass-card p-3 border-0">
+                            <div class="card-body">
+                                <div class="d-flex align-items-center mb-3">
+                                    <div class="bg-purple rounded-circle me-2" style="width: 10px; height: 10px; background: #6200ea;"></div>
+                                    <span class="text-uppercase small fw-bold text-muted">Article</span>
+                                </div>
+                                <h4 class="card-title fw-bold mb-3">{post.title}</h4>
+                                
+                                <p class="text-muted small mb-3">
+                                    By <strong>{post.users?.username || 'Guest Author'}</strong> • {new Date(post.created_at).toLocaleDateString()}
+                                </p>
+                                
+                                <p class="card-text text-secondary mb-4">
+                                    {post.content && post.content.length > 120 
+                                      ? post.content.substring(0, 120) + "..." 
+                                      : post.content}
+                                </p>
                             </div>
-                            <h4 class="card-title fw-bold mb-3">{post.title}</h4>
-                            <p class="text-muted small mb-3">By <strong>{post.users?.username}</strong> • {new Date(post.created_at).toLocaleDateString()}</p>
-                            <p class="card-text text-secondary mb-4">{post.content.substring(0, 120)}...</p>
-                        </div>
-                        <div class="card-footer bg-transparent border-0 px-3 pb-3">
-                            <a href={`/post/${post.id}`} class="btn-purple w-100 text-center text-decoration-none d-block">Read Story</a>
+                            <div class="card-footer bg-transparent border-0 px-3 pb-3">
+                                <a href={`/post/${post.id}`} class="btn-purple w-100 text-center text-decoration-none d-block">Read Story</a>
+                            </div>
                         </div>
                     </div>
+                ))
+            ) : (
+                <div class="col-12 text-center py-5">
+                    <p class="text-muted fs-5">No stories found yet.</p>
+                    <a href="/create-post" class="btn btn-primary">Publish the first post</a>
                 </div>
-            ))}
+            )}
         </div>
     </div>
 </Layout>
+
+<style>
+  .glass-card {
+    background: rgba(255, 255, 255, 0.9);
+    backdrop-filter: blur(10px);
+    border-radius: 15px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+    transition: all 0.3s ease;
+  }
+  .glass-card:hover {
+    transform: translateY(-10px);
+    box-shadow: 0 12px 30px rgba(0,0,0,0.1);
+  }
+  .btn-purple {
+    background: #6200ea;
+    color: white;
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-weight: bold;
+    border: none;
+    transition: 0.3s;
+    text-align: center;
+    text-decoration: none;
+    display: block;
+  }
+  .btn-purple:hover {
+    background: #4a00b1;
+    color: white;
+  }
+</style>
